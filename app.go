@@ -16,6 +16,11 @@ import (
 	"os/exec"
 )
 
+type HtmlExcel struct {
+	Html  string
+	Excel string
+}
+
 func main() {
 	m := martini.Classic()
 
@@ -48,12 +53,13 @@ func extractHandler(render render.Render, request *http.Request) {
 		render.HTML(500, "error", "Something went wrong...")
 		return
 	}
-	defer file.Close()
 
+	defer file.Close()
 	filename := handler.Filename
 	if _, err := os.Stat("./upload/" + filename); err == nil {
 		filename = "(1)_" + filename
 	}
+
 	f, err := os.OpenFile("./upload/" + filename, os.O_WRONLY | os.O_CREATE, 0666)
 	if err != nil {
 		fmt.Println(err)
@@ -61,44 +67,15 @@ func extractHandler(render render.Render, request *http.Request) {
 		render.HTML(500, "error", "Something went wrong...")
 		return
 	}
+
 	defer f.Close()
 	io.Copy(f, file)
 	err = extractTable(filename)
 	if err != nil {
-		render.HTML(400, "error", "Bad PDF...")
-		return
-	}
-	dir, err := ioutil.ReadDir("./upload/")
-
-	var htmlFiles []string
-	var excelFiles []string
-	for _, fileinfo := range dir {
-		if strings.Index(fileinfo.Name(), filename) == 0 {
-			//			var html string
-			//			var excel string
-			if strings.Contains(fileinfo.Name(), ".html") {
-				dat, _ := ioutil.ReadFile("./upload/" + fileinfo.Name())
-				//				html = string(dat)
-				htmlFiles = append(htmlFiles, string(dat))
-			}
-			if strings.Contains(fileinfo.Name(), ".xlsx") {
-				//				excel = fileinfo.Name()
-				excelFiles = append(excelFiles, fileinfo.Name())
-			}
-			//			htmlexcel = append(htmlexcel, HtmlExcel{html, excel})
-		}
-	}
-	type HtmlExcel struct {
-		Html  string
-		Excel string
-	}
-	var htmlexcel []HtmlExcel
-
-	for i, _ := range htmlFiles {
-		htmlexcel = append(htmlexcel, HtmlExcel{htmlFiles[i], excelFiles[i]})
+		fmt.Println(err)
 	}
 
-	render.HTML(200, "table", htmlexcel)
+	render.HTML(200, "table", getHtmlExcel(filename))
 }
 
 func downloadHandler(render render.Render, params martini.Params) {
@@ -129,4 +106,25 @@ func extractTable(filename string) error {
 
 func unescape(escaped string) interface{} {
 	return template.HTML(escaped)
+}
+
+func getHtmlExcel(filename string) []HtmlExcel {
+	var htmlFiles, excelFiles []string
+	dir, _ := ioutil.ReadDir("./upload/")
+	for _, fileinfo := range dir {
+		if strings.Index(fileinfo.Name(), filename) == 0 {
+			if strings.Contains(fileinfo.Name(), ".html") {
+				dat, _ := ioutil.ReadFile("./upload/" + fileinfo.Name())
+				htmlFiles = append(htmlFiles, string(dat))
+			}
+			if strings.Contains(fileinfo.Name(), ".xlsx") {
+				excelFiles = append(excelFiles, fileinfo.Name())
+			}
+		}
+	}
+	var htmlexcel []HtmlExcel
+	for i, _ := range htmlFiles {
+		htmlexcel = append(htmlexcel, HtmlExcel{htmlFiles[i], excelFiles[i]})
+	}
+	return htmlexcel
 }
