@@ -1,19 +1,19 @@
 package main
 
 import (
+	"crypto/md5"
+	"fmt"
 	"github.com/codegangsta/martini"
 	"github.com/martini-contrib/render"
+	"html/template"
 	"io"
-	"strconv"
-	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
-	"io/ioutil"
-	"html/template"
+	"os/exec"
+	"strconv"
 	"strings"
 	"time"
-	"crypto/md5"
-	"os/exec"
 )
 
 type HtmlExcel struct {
@@ -97,7 +97,6 @@ func extractTable(filename string) error {
 		"./extractor/cells_project.jar",
 		"./upload/" + filename).CombinedOutput()
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 	fmt.Printf("%s\n", result)
@@ -109,7 +108,7 @@ func unescape(escaped string) interface{} {
 }
 
 func getHtmlExcel(filename string) []HtmlExcel {
-	var htmlFiles, excelFiles []string
+	htmlFiles, excelFiles := make([]string, 0), make([]string, 0)
 	dir, _ := ioutil.ReadDir("./upload/")
 	for _, fileinfo := range dir {
 		if strings.Index(fileinfo.Name(), filename) == 0 {
@@ -122,7 +121,7 @@ func getHtmlExcel(filename string) []HtmlExcel {
 			}
 		}
 	}
-	var htmlexcel []HtmlExcel
+	htmlexcel := make([]HtmlExcel, 0)
 	for i, _ := range htmlFiles {
 		htmlexcel = append(htmlexcel, HtmlExcel{htmlFiles[i], excelFiles[i]})
 	}

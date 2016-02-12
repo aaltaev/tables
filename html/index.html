@@ -1,21 +1,60 @@
-<div class="row">
-    <div class="col-xs-4"></div>
-    <div class="col-xs-4">
-        <form enctype="multipart/form-data" method="post" action="/extract">
-            <div class="form-group">
-                <h4>Choose PDF file</h4>
-            <span class="file-input btn btn-primary btn-file">
-                Browse&hellip; <input type="file" name="inpdf" accept=".pdf"/>
-            </span>
-                <input type="hidden" name="token" value="{{.}}/">
-            </div>
-            <div class="form-group">
-                <button class="btn btn-default" type="submit">
-                    <span class="glyphicon glyphicon-circle-arrow-up"></span>&nbsp;Extract
-                </button>
-            </div>
-        </form>
-    </div>
-    <div class="col-xs-4"></div>
-</div>
+<script src='https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit' async defer></script>
+<script>
+    function submitHandler() {
+        console.log(document.getElementsByName("inpdf").valueOf());
+        document.getElementById('refresh').classList.remove("glyphicon-circle-arrow-up");
+        document.getElementById('refresh').classList.add("glyphicon-refresh");
+        document.getElementById('refresh').classList.add("glyphicon-refresh-animate");
+        document.getElementById('submit').disabled = true;
+    }
+    var verifyCallback = function (response) {
+        document.getElementById('submit').disabled = false;
+    };
+    var onloadCallback = function () {
+        grecaptcha.render("g-recaptcha", {
+            'sitekey': '6LdhBxgTAAAAAOgPpHD5xurScRQL9gPHzf0MXRVZ',
+            'callback': verifyCallback
+        });
+    };
+</script>
 <link rel="stylesheet" href="../resources/css/btn.css">
+<link rel="stylesheet" href="../resources/css/refresh.css">
+
+<div class="panel panel-default">
+    <div class="panel-body">
+        <div class="page-header">
+            <h1>PDF Table Extraction Tool</h1>
+        </div>
+        <p class="lead text-justify">
+            This is an early prototype of tool for table extraction from PDF documents.
+            It does not detect tables, so it works best with prepared PDFs,
+            which contain only one table per document. Also, that tool can't do OCR,
+            therefore scanned PDFs are not supported.
+        </p>
+        <p class="lead text-justify">
+            You may download examples of prepared PDFs <a href="http://cells.icc.ru/files/datasets/Dataset-PDF-TE.zip">here</a>
+        </p>
+        <div class="container">
+            <div class="row">
+                <div id="g-recaptcha" class="g-recaptcha"></div>
+            </div>
+            <div class="row">
+                <form name="pdfform" enctype="multipart/form-data" method="post" action="/extract"
+                      onsubmit="submitHandler()">
+                    <div class="form-group">
+                        <h4>Choose PDF file</h4>
+                    <span class="file-input btn btn-primary btn-file">
+                        Browse&hellip; <input type="file" name="inpdf" accept=".pdf"/>
+                    </span>
+                        <input type="hidden" name="token" value="{{.}}/">
+                    </div>
+                    <div class="form-group">
+                        <button id="submit" class="btn btn-default" type="submit" disabled>
+                            <span id="refresh" class="glyphicon glyphicon-circle-arrow-up"></span>&nbsp;Extract
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

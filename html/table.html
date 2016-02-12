@@ -1,19 +1,9 @@
 {{ range .}}
-<div class="row">
-    <div class="col-xs-2"></div>
-    <div class="col-xs-8">
-        <a class="btn btn-primary" href="/download/{{.Excel}}">
-            <span class="glyphicon glyphicon-floppy-disk"></span>{{.Excel}}
-        </a>
-    </div>
-    <div class="col-xs-2"></div>
-</div>
 <br/>
-<div class="row">
-    <div class="col-xs-2"></div>
-    <div class="col-xs-8">
-        {{ .Html | unescape }}
-    </div>
-    <div class="col-xs-2"></div>
-</div>
+<a class="btn btn-primary" href="/download/{{.Excel}}">
+    <span class="glyphicon glyphicon-floppy-disk"></span>{{.Excel}}
+</a>
+<br/>
+<br/>
+{{ .Html | unescape }}
 {{ end }}

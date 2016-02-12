@@ -3,23 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <title>PTF Table Extractor</title>
-    <script src="../resources/js/jquery-2.2.0.min.js"></script>
-    <script src="../resources/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../resources/js/jquery-2.2.0.min.js"></script>
+    <script type="text/javascript" src="../resources/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="../resources/css/bootstrap-theme.min.css">
     <link rel="stylesheet" href="../resources/css/bootstrap.min.css">
 </head>
 <body>
-<nav class="navbar navbar-default">
-    <div class="container-fluid">
-        <div class="navbar-header">
-            <a class="navbar-brand" href="/">PDF Table Extractor</a>
-        </div>
-        <ul class="nav navbar-nav">
-        </ul>
-    </div>
-</nav>
 <div class="container">
-    {{ yield }}
+    <div class="row">
+        <div class="col-xs-2"></div>
+        <div class="col-xs-8">
+            <nav class="navbar navbar-default">
+                <div class="container">
+                    <div class="navbar-header">
+                        <a class="navbar-brand" href="/">PDF Table Extractor</a>
+                    </div>
+                </div>
+            </nav>
+            {{ yield }}
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <p class="text-center">&copy; 2016 <a href="http://cells.icc.ru">Cells Research Group</a></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-2"></div>
+    </div>
 </div>
 </body>
 </html>
