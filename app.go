@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/md5"
 	"fmt"
 	"github.com/codegangsta/martini"
 	"github.com/martini-contrib/render"
@@ -11,9 +10,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"strconv"
 	"strings"
-	"time"
 )
 
 type HtmlExcel struct {
@@ -41,7 +38,7 @@ func main() {
 }
 
 func indexHandler(r render.Render) {
-	r.HTML(200, "index", generateToken())
+	r.HTML(200, "index", nil)
 }
 
 
@@ -83,14 +80,6 @@ func downloadHandler(render render.Render, params martini.Params) {
 	render.Data(200, dat)
 }
 
-func generateToken() string {
-	curtime := time.Now().Unix()
-	h := md5.New()
-	io.WriteString(h, strconv.FormatInt(curtime, 10))
-	token := fmt.Sprintf("%x", h.Sum(nil))
-	return token
-}
-
 func extractTable(filename string) error {
 	result, err := exec.Command(
 		"java", "-jar",
@@ -107,6 +96,8 @@ func unescape(escaped string) interface{} {
 	return template.HTML(escaped)
 }
 
+// getHtmlExcel collects .html and .xlsx results
+// of table extraction from pdf with filename name
 func getHtmlExcel(filename string) []HtmlExcel {
 	htmlFiles, excelFiles := make([]string, 0), make([]string, 0)
 	dir, _ := ioutil.ReadDir("./upload/")
