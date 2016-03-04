@@ -2,4 +2,6 @@
 .idea
 tables.exe
 tables.iml
-resources
+resources/css
+resources/fonts
+resources/js/libs
