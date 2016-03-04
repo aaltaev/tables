@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sort"
 )
 
 type HtmlExcel struct {
@@ -41,9 +42,33 @@ func indexHandler(r render.Render) {
 	r.HTML(200, "index", nil)
 }
 
-
-func extractHandler(render render.Render, request *http.Request) {
+func extractHandler(render render.Render, request *http.Request, params martini.Params) {
 	request.ParseMultipartForm(32 << 20)
+
+	keys := make([]string, 0)
+	values := request.MultipartForm.Value
+	for key, _ := range values {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	startX := make([]string, 0)
+	startY := make([]string, 0)
+	endX := make([]string, 0)
+	endY := make([]string, 0)
+
+	for _, v := range keys {
+		if strings.Contains(v, "startX") {
+			startX = append(startX, v)
+		}else if strings.Contains(v, "startY") {
+			startY = append(startY, v)
+		}else if strings.Contains(v, "endX") {
+			endX = append(endX, v)
+		}else if strings.Contains(v, "endY") {
+			endY = append(endY, v)
+		}
+	}
+
 	file, handler, err := request.FormFile("inpdf")
 	if err != nil {
 		fmt.Println(err)
@@ -67,7 +92,18 @@ func extractHandler(render render.Render, request *http.Request) {
 
 	defer f.Close()
 	io.Copy(f, file)
-	err = extractTable(filename)
+
+	parameters := ""
+	for i, _ := range startX {
+		parameters += appendList(values[startX[i]])
+		parameters += appendList(values[startY[i]])
+		parameters += appendList(values[endX[i]])
+		parameters += appendList(values[endY[i]])
+	}
+
+	fmt.Println(parameters)
+
+	err = extractTable(filename, parameters)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -80,15 +116,15 @@ func downloadHandler(render render.Render, params martini.Params) {
 	render.Data(200, dat)
 }
 
-func extractTable(filename string) error {
-	result, err := exec.Command(
+func extractTable(filename string, parameters string) error {
+	_, err := exec.Command(
 		"java", "-jar",
 		"./extractor/cells_project.jar",
-		"./upload/" + filename).CombinedOutput()
+		"./upload/" + filename,
+		parameters).CombinedOutput()
 	if err != nil {
 		return err
 	}
-	fmt.Printf("%s\n", result)
 	return nil
 }
 
@@ -117,4 +153,17 @@ func getHtmlExcel(filename string) []HtmlExcel {
 		htmlexcel = append(htmlexcel, HtmlExcel{htmlFiles[i], excelFiles[i]})
 	}
 	return htmlexcel
+}
+
+func appendList(list []string) string {
+	result := ""
+	for _, val := range list {
+		if val == "" {
+			result += "0"
+		}else {
+			result += val;
+		}
+	}
+	result += " "
+	return result
 }
