@@ -1,7 +1,7 @@
-# Created by .ignore support plugin (hsz.mobi)
 .idea
-tables.exe
-tables.iml
-resources/css
-resources/fonts
-resources/js/libs
+tables*
+*bootstrap*
+*glyphicons*
+*jquery*
+*npm*
+*pdf.*
