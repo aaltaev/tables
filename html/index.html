@@ -2,22 +2,7 @@
 <script src='../resources/js/libs/pdf.js'></script>
 <script src='../resources/js/selectpdfarea.js'></script>
 <script>
-    function submitHandler() {
-        console.log(document.getElementsByName("inpdf").valueOf());
-        document.getElementById('refresh').classList.remove("glyphicon-circle-arrow-up");
-        document.getElementById('refresh').classList.add("glyphicon-refresh");
-        document.getElementById('refresh').classList.add("glyphicon-refresh-animate");
-        document.getElementById('submit').disabled = true;
-    }
-    var verifyCallback = function () {
-        document.getElementById('submit').disabled = false;
-    };
-    var onloadCallback = function () {
-        grecaptcha.render("g-recaptcha", {
-            'sitekey': '6LdhBxgTAAAAAOgPpHD5xurScRQL9gPHzf0MXRVZ',
-            'callback': verifyCallback
-        });
-    };
+
 </script>
 <link rel="stylesheet" href="../resources/css/btn.css">
 <link rel="stylesheet" href="../resources/css/refresh.css">

@@ -5,8 +5,40 @@ var canvases = [];
 var backgrounds = [];
 var x1 = 0, x2 = 0, y1 = 0, y2 = 0;
 var isMouseDown = false;
+var isFileSelected = false;
+var isCaptchaVerified = false;
 
 function fileHandler() {
+    reset();
+    document.getElementById("pdf").innerHTML = '';
+    document.getElementById("pdfformhidden").innerHTML = '';
+    var x = document.getElementById("inpdf");
+    if ('files' in x && x.files.length > 0) {
+
+        isFileSelected = true;
+
+        var description = document.createElement('p');
+        description.classList.add("lead");
+        description.classList.add("text-justify");
+        description.innerHTML = "Select area for table extraction on each page. If you want to skip page, make no selection";
+        document.getElementById('pdf').appendChild(description);
+        [].forEach.call(x.files, function (f, i) {
+            var reader = new FileReader();
+            reader.onload = function (event) {
+                pdfFile = new Uint8Array(this.result);
+                handlePdf(pdfFile);
+            };
+            reader.readAsArrayBuffer(f);
+        });
+
+    } else {
+        isFileSelected = false;
+    }
+    updateSubmitButton();
+
+}
+
+function reset() {
     pdfFile = null;
     currPage = 1;
     numPages = 0;
@@ -18,27 +50,6 @@ function fileHandler() {
     y1 = 0;
     y2 = 0;
     isMouseDown = false;
-
-    document.getElementById("pdf").innerHTML = '';
-    document.getElementById("pdfformhidden").innerHTML = '';
-    var x = document.getElementById("inpdf");
-    if ('files' in x && x.files.length > 0) {
-        var description = document.createElement('p');
-        description.classList.add("lead");
-        description.classList.add("text-justify");
-        description.innerHTML = "Select area for table extraction on each page. If you want to extract from the whole page, make no selection";
-        document.getElementById('pdf').appendChild(description);
-        [].forEach.call(x.files, function (f, i) {
-            var reader = new FileReader();
-            reader.onload = function (event) {
-                pdfFile = new Uint8Array(this.result);
-                handlePdf(pdfFile);
-            };
-            reader.readAsArrayBuffer(f);
-        });
-
-    }
-
 }
 
 function handlePdf(pdfFile) {
@@ -51,6 +62,7 @@ function handlePdf(pdfFile) {
 
 function handlePages(page) {
 
+    //create canvas for page and render current pdf page
     var viewport = page.getViewport(1);
     var scale = document.getElementById("pdf").clientWidth / viewport.width;
     console.log(scale);
@@ -62,15 +74,14 @@ function handlePages(page) {
     var ctx = canvas.getContext('2d');
     canvas.height = viewport.height;
     canvas.width = viewport.width;
-
     page.render({canvasContext: ctx, viewport: viewport});
 
-
+    //create 'drop selection' button for current pdf page canvas
     document.getElementById("pdf").appendChild(canvas);
     var dropBtn = document.createElement('button');
     dropBtn.id = 'drop' + currPage;
     dropBtn.innerText = "Drop selection";
-    dropBtn.onclick = function () {
+    dropBtn.onclick = function () { //dropping the selection
         var id = parseInt(this.id.replace('drop', ''));
         canvases[id].getContext('2d').putImageData(backgrounds[id], 0, 0);
         document.getElementById('startX' + id).value = '';
@@ -88,38 +99,27 @@ function handlePages(page) {
     canvas.addEventListener('mousemove', mouseMoveHandler, false);
 
     var form = document.getElementById('pdfformhidden');
+    form.appendChild(createInput('startX', currPage));
+    form.appendChild(createInput('startY', currPage));
+    form.appendChild(createInput('endX', currPage));
+    form.appendChild(createInput('endY', currPage));
 
-    var input = document.createElement("input");
-    input.type = 'hidden';
-    input.id = ('startX' + currPage);
-    input.name = input.id;
-    form.appendChild(input);
-
-    input = document.createElement("input");
-    input.type = 'hidden';
-    input.id = ('startY' + currPage);
-    input.name = input.id;
-    form.appendChild(input);
-
-    input = document.createElement("input");
-    input.type = 'hidden';
-    input.id = ('endX' + currPage);
-    input.name = input.id;
-    form.appendChild(input);
-
-    input = document.createElement("input");
-    input.type = 'hidden';
-    input.id = ('endY' + currPage);
-    input.name = input.id;
-    form.appendChild(input);
-
-
+    //handling next page
     currPage++;
     if (pdfDoc != null && currPage <= numPages) {
         pdfDoc.getPage(currPage).then(handlePages);
     }
 }
 
+function createInput(id, number) {
+    var input = document.createElement("input");
+    input.type = 'hidden';
+    input.id = (id + number);
+    input.name = input.id;
+    return input;
+}
+
+// mouse handlers
 function mouseDownHandler(event) {
     if (event.button == 0) {
         var id = parseInt(event.target.id.replace('pdfcanvas', ''));
@@ -129,8 +129,6 @@ function mouseDownHandler(event) {
         }
         x1 = event.pageX - getCoords(canvas).left;//canvas.offsetLeft;;
         y1 = event.pageY - getCoords(canvas).top;//canvas.offsetTop;
-        //console.log(canvas.);
-        //console.log(canvas.offsetTop);
         isMouseDown = true;
     }
 }
@@ -141,10 +139,8 @@ function mouseMoveHandler(event) {
         var canvas = canvases[id];
         var context = canvas.getContext('2d');
 
-        x2 = event.pageX - getCoords(canvas).left;//canvas.offsetLeft;
-        y2 = event.pageY - getCoords(canvas).top;//canvas.offsetTop;
-        console.log(canvas.offsetLeft);
-        console.log(canvas.offsetTop);
+        x2 = event.pageX - getCoords(canvas).left;
+        y2 = event.pageY - getCoords(canvas).top;
         context.globalAlpha = 0.3;
         var width = x2 - x1;
         var height = y2 - y1;
@@ -188,7 +184,8 @@ function mouseUpHandler(event) {
     }
 }
 
-function getCoords(elem) { // crossbrowser version
+// gets the coordinates of element on page
+function getCoords(elem) {
     var box = elem.getBoundingClientRect();
 
     var body = document.body;
@@ -204,4 +201,29 @@ function getCoords(elem) { // crossbrowser version
     var left = box.left + scrollLeft - clientLeft;
 
     return {top: Math.round(top), left: Math.round(left)};
+}
+
+// captcha handling
+
+function verifyCallback() {
+    isCaptchaVerified = true;
+    updateSubmitButton();
+}
+
+function onloadCallback() {
+    grecaptcha.render("g-recaptcha", {
+        'sitekey': '6LdhBxgTAAAAAOgPpHD5xurScRQL9gPHzf0MXRVZ',
+        'callback': verifyCallback
+    });
+}
+
+function updateSubmitButton() {
+    document.getElementById('submit').disabled = !(isCaptchaVerified && isFileSelected);
+}
+
+function submitHandler() {
+    document.getElementById('refresh').classList.remove("glyphicon-circle-arrow-up");
+    document.getElementById('refresh').classList.add("glyphicon-refresh");
+    document.getElementById('refresh').classList.add("glyphicon-refresh-animate");
+    document.getElementById('submit').disabled = true;
 }
