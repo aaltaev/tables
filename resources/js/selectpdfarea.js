@@ -6,7 +6,6 @@ var backgrounds = [];
 var x1 = 0, x2 = 0, y1 = 0, y2 = 0;
 var isMouseDown = false;
 var isFileSelected = false;
-var isCaptchaVerified = false;
 
 function fileHandler() {
     reset();
@@ -80,7 +79,7 @@ function handlePages(page) {
     document.getElementById("pdf").appendChild(canvas);
     var dropBtn = document.createElement('button');
     dropBtn.id = 'drop' + currPage;
-    dropBtn.innerText = "Drop selection";
+    dropBtn.innerHTML = "Drop selection";
     dropBtn.onclick = function () { //dropping the selection
         var id = parseInt(this.id.replace('drop', ''));
         canvases[id].getContext('2d').putImageData(backgrounds[id], 0, 0);
@@ -127,8 +126,8 @@ function mouseDownHandler(event) {
         if (backgrounds[id] == null) {
             backgrounds[id] = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
         }
-        x1 = event.pageX - getCoords(canvas).left;//canvas.offsetLeft;;
-        y1 = event.pageY - getCoords(canvas).top;//canvas.offsetTop;
+        x1 = event.pageX - getCoords(canvas).left;
+        y1 = event.pageY - getCoords(canvas).top;
         isMouseDown = true;
     }
 }
@@ -166,8 +165,8 @@ function mouseUpHandler(event) {
         var temp;
         if (x1 > x2) {
             temp = x1;
-            x2 = x1;
-            x1 = temp;
+            x1 = x2;
+            x2 = temp;
         }
         if (y1 > y2) {
             temp = y1;
@@ -203,22 +202,8 @@ function getCoords(elem) {
     return {top: Math.round(top), left: Math.round(left)};
 }
 
-// captcha handling
-
-function verifyCallback() {
-    isCaptchaVerified = true;
-    updateSubmitButton();
-}
-
-function onloadCallback() {
-    grecaptcha.render("g-recaptcha", {
-        'sitekey': '6LdhBxgTAAAAAOgPpHD5xurScRQL9gPHzf0MXRVZ',
-        'callback': verifyCallback
-    });
-}
-
 function updateSubmitButton() {
-    document.getElementById('submit').disabled = !(isCaptchaVerified && isFileSelected);
+    document.getElementById('submit').disabled = !isFileSelected;
 }
 
 function submitHandler() {
