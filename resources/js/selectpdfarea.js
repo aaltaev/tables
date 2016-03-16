@@ -5,23 +5,22 @@ var canvases = [];
 var backgrounds = [];
 var x1 = 0, x2 = 0, y1 = 0, y2 = 0;
 var isMouseDown = false;
-var isFileSelected = false;
 
 function fileHandler() {
     reset();
-    document.getElementById("pdf").innerHTML = '';
-    document.getElementById("pdfformhidden").innerHTML = '';
-    var x = document.getElementById("inpdf");
-    if ('files' in x && x.files.length > 0) {
+    var pdfInput = document.getElementById("inpdf");
 
-        isFileSelected = true;
 
+    if ('files' in pdfInput && pdfInput.files.length > 0) {
+        document.getElementById('submit').disabled = false;
+        document.getElementById("pdfLabel").innerHTML = pdfInput.value.split(/(\\|\/)/g).pop();
         var description = document.createElement('p');
         description.classList.add("lead");
         description.classList.add("text-justify");
         description.innerHTML = "Select area for table extraction on each page. If you want to skip page, make no selection";
         document.getElementById('pdf').appendChild(description);
-        [].forEach.call(x.files, function (f, i) {
+
+        [].forEach.call(pdfInput.files, function (f, i) {
             var reader = new FileReader();
             reader.onload = function (event) {
                 pdfFile = new Uint8Array(this.result);
@@ -29,12 +28,9 @@ function fileHandler() {
             };
             reader.readAsArrayBuffer(f);
         });
-
     } else {
-        isFileSelected = false;
+        document.getElementById('submit').disabled = true;
     }
-    updateSubmitButton();
-
 }
 
 function reset() {
@@ -49,6 +45,9 @@ function reset() {
     y1 = 0;
     y2 = 0;
     isMouseDown = false;
+    document.getElementById("pdf").innerHTML = '';
+    document.getElementById("pdfformhidden").innerHTML = '';
+    document.getElementById("pdfLabel").innerHTML = 'No file selected';
 }
 
 function handlePdf(pdfFile) {
@@ -200,10 +199,6 @@ function getCoords(elem) {
     var left = box.left + scrollLeft - clientLeft;
 
     return {top: Math.round(top), left: Math.round(left)};
-}
-
-function updateSubmitButton() {
-    document.getElementById('submit').disabled = !isFileSelected;
 }
 
 function submitHandler() {

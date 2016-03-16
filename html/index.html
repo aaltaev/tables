@@ -1,10 +1,6 @@
 <script src='../resources/js/libs/pdf.js'></script>
 <script src='../resources/js/selectpdfarea.js'></script>
-<script>
-
-</script>
-<link rel="stylesheet" href="../resources/css/btn.css">
-<link rel="stylesheet" href="../resources/css/refresh.css">
+<style>canvas { cursor: crosshair; }</style>
 
 <div class="panel panel-default">
     <div class="panel-body">
@@ -13,27 +9,27 @@
         </div>
         <p class="lead text-justify">
             This is an early prototype of tool for table extraction from PDF documents.
-            It does not detect tables, so it works best with prepared PDFs,
-            which contain only one table per document. Also, that tool can't do OCR,
-            therefore scanned PDFs are not supported.
+            It does not detect tables, so it's necessary to specify the area from which
+            you want to extract the table. Also, that tool can't do OCR, therefore
+            scanned PDFs are not supported.
         </p>
         <p class="lead text-justify">
-            You may download examples of prepared PDFs <a href="http://cells.icc.ru/files/datasets/Dataset-PDF-TE.zip">here</a>
+            You may download examples of PDFs containing tables <a
+                href="http://cells.icc.ru/files/datasets/Dataset-PDF-TE.zip">here</a>
         </p>
 
         <form id="pdfform" name="pdfform" enctype="multipart/form-data" method="post" action="/extract"
               onsubmit="submitHandler()">
             <div class="form-group">
                 <h4>Choose PDF file</h4>
-                    <span class="file-input btn btn-primary btn-file">
-                        Browse&hellip; <input type="file" id="inpdf" name="inpdf" accept=".pdf"
-                                              onchange="fileHandler()"/>
-                    </span>
+                <input type="file" id="inpdf" name="inpdf" accept=".pdf"
+                       onchange="fileHandler()" style="display: none"/>
+                <button type="button" class="btn btn-default" onclick="document.getElementById('inpdf').click()">
+                    Browse&hellip;</button>
+                <label id="pdfLabel" for="inpdf">No file selected</label>
             </div>
             <div class="form-group">
-                <button id="submit" class="btn btn-default" type="submit" disabled>
-                    <span id="refresh" class="glyphicon glyphicon-circle-arrow-up"></span>&nbsp;Extract
-                </button>
+                <button id="submit" class="btn btn-primary" type="submit" disabled>Extract</button>
             </div>
             <div id="pdfformhidden"></div>
         </form>
