@@ -8,11 +8,8 @@ import (
 	"html/template"
 
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
-	"os/exec"
 )
 
 func main() {
@@ -27,9 +24,9 @@ func main() {
 	}))
 	options := martini.StaticOptions{Prefix:"resources"}
 	m.Use(martini.Static("resources", options))
-	m.Get("/", indexHandler)
-	m.Post("/extract", extractHandler)
-	m.Get("/download/:id", downloadHandler)
+	m.Get("/pdfte", indexHandler)
+	m.Post("/pdfte/extract", extractHandler)
+	m.Get("/pdfte/download/:id", downloadHandler)
 	m.Run()
 }
 
@@ -38,50 +35,19 @@ func indexHandler(r render.Render) {
 }
 
 func extractHandler(render render.Render, request *http.Request, params martini.Params) {
-	request.ParseMultipartForm(32 << 20)
-	file, handler, err := request.FormFile("inpdf")
+	filename, err := utils.CopyFile(request)
 	if err != nil {
 		fmt.Println(err)
 		render.HTML(500, "error", "Something went wrong...")
-		return
 	}
-	defer file.Close()
-
-	filename := handler.Filename
-	if _, err := os.Stat("./upload/" + filename); err == nil {
-		filename = "(1)_" + filename
-	}
-	f, err := os.OpenFile("./upload/" + filename, os.O_WRONLY | os.O_CREATE, 0666)
-	if err != nil {
-		fmt.Println(err)
-		render.Redirect("/")
-		render.HTML(500, "error", "Something went wrong...")
-		return
-	}
-	defer f.Close()
-	io.Copy(f, file)
-
-	err = extractTable(filename, utils.ParseSelection(request.MultipartForm.Value))
+	err = utils.ExtractTable(filename, utils.ParseSelection(request.MultipartForm.Value))
 	if err != nil {
 		fmt.Println(err)
 	}
-
 	render.HTML(200, "table", utils.GetHtmlExcel(filename))
 }
 
 func downloadHandler(render render.Render, params martini.Params) {
 	dat, _ := ioutil.ReadFile("./upload/" + params["id"])
 	render.Data(200, dat)
-}
-
-func extractTable(filename string, parameters string) error {
-	_, err := exec.Command(
-		"java", "-jar",
-		"./extractor/cells_project.jar",
-		"./upload/" + filename,
-		parameters).CombinedOutput()
-	if err != nil {
-		return err
-	}
-	return nil
 }

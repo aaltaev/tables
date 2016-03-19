@@ -5,6 +5,9 @@ import (
 	"strings"
 	"html/template"
 	"io/ioutil"
+	"net/http"
+	"os"
+	"io"
 )
 
 type HtmlExcel struct {
@@ -84,4 +87,25 @@ func appendList(list []string) string {
 	}
 	result += " "
 	return result
+}
+
+func CopyFile(request *http.Request) (string, error) {
+	request.ParseMultipartForm(32 << 20)
+	file, handler, err := request.FormFile("inpdf")
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	filename := handler.Filename
+	if _, err := os.Stat("./upload/" + filename); err == nil {
+		filename = "(1)_" + filename
+	}
+	f, err := os.OpenFile("./upload/" + filename, os.O_WRONLY | os.O_CREATE, 0666)
+	if err != nil {
+		return filename, err
+	}
+	defer f.Close()
+	io.Copy(f, file)
+	return filename, err
 }
