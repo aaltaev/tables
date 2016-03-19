@@ -1,9 +1,10 @@
 {{ range .}}
 <br/>
-<a class="btn btn-primary" href="/download/{{.Excel}}">
+<a class="btn btn-primary" href="/pdfte/download/{{.Excel}}">
     <span class="glyphicon glyphicon-floppy-disk"></span>{{.Excel}}
 </a>
 <br/>
 <br/>
 {{ .Html | unescape }}
 {{ end }}
+<br/>

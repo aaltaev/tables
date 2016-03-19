@@ -106,6 +106,18 @@ function handlePages(page) {
     currPage++;
     if (pdfDoc != null && currPage <= numPages) {
         pdfDoc.getPage(currPage).then(handlePages);
+    } else {
+        //when render stops, add 'Extract' button below
+        var btn = document.createElement('button');
+        btn.classList.add("btn");
+        btn.classList.add("btn-primary");
+        btn.innerHTML = "Extract";
+        btn.onclick = function () {
+            document.getElementById('submit').click();
+            this.disabled = true;
+            submitHandler();
+        };
+        document.getElementById("pdf").appendChild(btn);
     }
 }
 
@@ -182,6 +194,10 @@ function mouseUpHandler(event) {
     }
 }
 
+function submitHandler() {
+    document.getElementById('submit').disabled = true;
+}
+
 // gets the coordinates of element on page
 function getCoords(elem) {
     var box = elem.getBoundingClientRect();
@@ -199,11 +215,4 @@ function getCoords(elem) {
     var left = box.left + scrollLeft - clientLeft;
 
     return {top: Math.round(top), left: Math.round(left)};
-}
-
-function submitHandler() {
-    document.getElementById('refresh').classList.remove("glyphicon-circle-arrow-up");
-    document.getElementById('refresh').classList.add("glyphicon-refresh");
-    document.getElementById('refresh').classList.add("glyphicon-refresh-animate");
-    document.getElementById('submit').disabled = true;
 }
