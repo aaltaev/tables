@@ -10,7 +10,6 @@ function fileHandler() {
     reset();
     var pdfInput = document.getElementById("inpdf");
 
-
     if ('files' in pdfInput && pdfInput.files.length > 0) {
         document.getElementById('submit').disabled = false;
         document.getElementById("pdfLabel").innerHTML = pdfInput.value.split(/(\\|\/)/g).pop();
@@ -18,7 +17,19 @@ function fileHandler() {
         description.classList.add("lead");
         description.classList.add("text-justify");
         description.innerHTML = "Select area for table extraction on each page. If you want to skip page, make no selection";
-        document.getElementById('pdf').appendChild(description);
+        var pdfDiv = document.getElementById('pdf');
+        pdfDiv.appendChild(description);
+
+        var tabHead = document.createElement('ul');
+        tabHead.classList.add("nav");
+        tabHead.classList.add("nav-tabs");
+        tabHead.id = "pdfTabs";
+        pdfDiv.appendChild(tabHead);
+
+        var tabContent = document.createElement("div");
+        tabContent.classList.add("tab-content");
+        tabContent.id = "tab-content";
+        pdfDiv.appendChild(tabContent);
 
         [].forEach.call(pdfInput.files, function (f, i) {
             var reader = new FileReader();
@@ -59,11 +70,55 @@ function handlePdf(pdfFile) {
 }
 
 function handlePages(page) {
+    var canvas = renderPage(page);
+    canvas.addEventListener('mousedown', mouseDownHandler, false);
+    canvas.addEventListener('mouseup', mouseUpHandler, false);
+    canvas.addEventListener('mousemove', mouseMoveHandler, false);
 
-    //create canvas for page and render current pdf page
+    var tab = document.createElement("a");
+    tab.href = "#" + currPage;
+    tab.innerHTML = currPage;
+    var li = document.createElement("li");
+    li.appendChild(tab);
+
+    var tabContent = document.createElement("div");
+    tabContent.classList.add("tab-pane");
+    tabContent.id = currPage;
+    if (currPage == 1) {
+        tabContent.classList.add("active");
+        li.classList.add("active");
+    }
+    tabContent.appendChild(canvas);
+    tabContent.appendChild(document.createElement('br'));
+    tabContent.appendChild(createDropButton(currPage));
+    tabContent.appendChild(document.createElement('br'));
+    tabContent.appendChild(document.createElement('br'));
+
+    document.getElementById("pdfTabs").appendChild(li);
+    document.getElementById("tab-content").appendChild(tabContent);
+
+    var form = document.getElementById('pdfformhidden');
+    form.appendChild(createInput('startX', currPage));
+    form.appendChild(createInput('startY', currPage));
+    form.appendChild(createInput('endX', currPage));
+    form.appendChild(createInput('endY', currPage));
+
+    currPage++;
+    if (pdfDoc != null && currPage <= numPages) {
+        //handling next page
+        pdfDoc.getPage(currPage).then(handlePages);
+    } else {
+        // if no more pages, then add listeners to tab buttons
+        $("#pdfTabs").find("a").click(function (e) {
+            e.preventDefault();
+            $(this).tab('show')
+        });
+    }
+}
+
+function renderPage(page) {
     var viewport = page.getViewport(1);
     var scale = document.getElementById("pdf").clientWidth / viewport.width;
-    console.log(scale);
     viewport = page.getViewport(scale);
     var canvas = document.createElement('canvas');
     canvases[currPage] = canvas;
@@ -73,11 +128,12 @@ function handlePages(page) {
     canvas.height = viewport.height;
     canvas.width = viewport.width;
     page.render({canvasContext: ctx, viewport: viewport});
+    return canvas;
+}
 
-    //create 'drop selection' button for current pdf page canvas
-    document.getElementById("pdf").appendChild(canvas);
+function createDropButton(pageId){
     var dropBtn = document.createElement('button');
-    dropBtn.id = 'drop' + currPage;
+    dropBtn.id = 'drop' + pageId;
     dropBtn.innerHTML = "Drop selection";
     dropBtn.onclick = function () { //dropping the selection
         var id = parseInt(this.id.replace('drop', ''));
@@ -87,38 +143,7 @@ function handlePages(page) {
         document.getElementById('endX' + id).value = '';
         document.getElementById('endY' + id).value = '';
     };
-    document.getElementById("pdf").appendChild(document.createElement('br'));
-    document.getElementById("pdf").appendChild(dropBtn);
-    document.getElementById("pdf").appendChild(document.createElement('br'));
-    document.getElementById("pdf").appendChild(document.createElement('br'));
-
-    canvas.addEventListener('mousedown', mouseDownHandler, false);
-    canvas.addEventListener('mouseup', mouseUpHandler, false);
-    canvas.addEventListener('mousemove', mouseMoveHandler, false);
-
-    var form = document.getElementById('pdfformhidden');
-    form.appendChild(createInput('startX', currPage));
-    form.appendChild(createInput('startY', currPage));
-    form.appendChild(createInput('endX', currPage));
-    form.appendChild(createInput('endY', currPage));
-
-    //handling next page
-    currPage++;
-    if (pdfDoc != null && currPage <= numPages) {
-        pdfDoc.getPage(currPage).then(handlePages);
-    } else {
-        //when render stops, add 'Extract' button below
-        var btn = document.createElement('button');
-        btn.classList.add("btn");
-        btn.classList.add("btn-primary");
-        btn.innerHTML = "Extract";
-        btn.onclick = function () {
-            document.getElementById('submit').click();
-            this.disabled = true;
-            submitHandler();
-        };
-        document.getElementById("pdf").appendChild(btn);
-    }
+    return dropBtn;
 }
 
 function createInput(id, number) {

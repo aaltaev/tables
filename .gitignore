@@ -1,7 +1,7 @@
 .idea
 tables*
+*pdf*
 *bootstrap*
-*glyphicons*
-*jquery*
-*npm*
-*pdf.*
+resources/css
+resources/fonts
+resources/js/libs
