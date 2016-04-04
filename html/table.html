@@ -1,10 +1,29 @@
-{{ range .}}
+<ul class="nav nav-tabs" id="tabs">
+    {{ range $id, $element := . }}
+    <li id="tab{{$id}}">
+        <a href="#{{$id}}">{{$element.Excel}}</a>
+    </li>
+    {{ end }}
+</ul>
+<div class="tab-content">
+    {{ range $id, $element := . }}
+    <div class="tab-pane" id="{{$id}}">
+        <br/>
+        <a class="btn btn-primary" href="/pdfte/download/{{.Excel}}">
+            {{$element.Excel}}
+        </a>
+        <br/>
+        <br/>
+        {{ $element.Html | unescape }}
+    </div>
+    {{ end }}
+</div>
 <br/>
-<a class="btn btn-primary" href="/pdfte/download/{{.Excel}}">
-    <span class="glyphicon glyphicon-floppy-disk"></span>{{.Excel}}
-</a>
-<br/>
-<br/>
-{{ .Html | unescape }}
-{{ end }}
-<br/>
+<script>
+    document.getElementById("tab0").classList.add("active");
+    document.getElementById("0").classList.add("active");
+    $("#tabs").find("a").click(function (e) {
+        e.preventDefault();
+        $(this).tab('show')
+    });
+</script>
