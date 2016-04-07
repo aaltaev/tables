@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"sort"
 	"strings"
 	"html/template"
 	"io/ioutil"
@@ -20,7 +19,7 @@ func ParseSelection(values map[string][]string) string {
 	for key, _ := range values {
 		keys = append(keys, key)
 	}
-	sort.Strings(keys)
+	keys = DoSort(keys, []string{"startX", "startY", "endX", "endY"})
 
 	startX := make([]string, 0)
 	startY := make([]string, 0)
