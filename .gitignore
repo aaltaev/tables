@@ -5,3 +5,4 @@ tables*
 resources/css
 resources/fonts
 resources/js/libs
+*.jar

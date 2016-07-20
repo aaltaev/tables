@@ -1,4 +1,4 @@
-<ul class="nav nav-tabs" id="tabs">
+﻿<ul class="nav nav-tabs" id="tabs">
     {{ range $id, $element := . }}
     <li id="tab{{$id}}">
         <a href="#{{$id}}">{{$element.Excel}}</a>
@@ -10,7 +10,7 @@
     <div class="tab-pane" id="{{$id}}">
         <br/>
         <a class="btn btn-primary" href="/pdfte/download/{{.Excel}}">
-            {{$element.Excel}}
+            &nbsp;Download <span style="text-decoration: underline;">{{$element.Excel}}</span>
         </a>
         <br/>
         <br/>

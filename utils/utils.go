@@ -1,12 +1,12 @@
 package utils
 
 import (
-	"strings"
 	"html/template"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
-	"io"
+	"strings"
 )
 
 type HtmlExcel struct {
@@ -29,11 +29,11 @@ func ParseSelection(values map[string][]string) string {
 	for _, v := range keys {
 		if strings.Contains(v, "startX") {
 			startX = append(startX, v)
-		}else if strings.Contains(v, "startY") {
+		} else if strings.Contains(v, "startY") {
 			startY = append(startY, v)
-		}else if strings.Contains(v, "endX") {
+		} else if strings.Contains(v, "endX") {
 			endX = append(endX, v)
-		}else if strings.Contains(v, "endY") {
+		} else if strings.Contains(v, "endY") {
 			endY = append(endY, v)
 		}
 	}
@@ -80,7 +80,7 @@ func appendList(list []string) string {
 	for _, val := range list {
 		if val == "" {
 			result += "0"
-		}else {
+		} else {
 			result += val;
 		}
 	}

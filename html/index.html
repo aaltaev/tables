@@ -1,6 +1,5 @@
-<script src='../resources/js/libs/pdf.js'></script>
+﻿<script src='../resources/js/libs/pdf.js'></script>
 <script src='../resources/js/selectpdfarea.js'></script>
-<style>canvas { cursor: crosshair; }</style>
 
 <p class="lead text-justify">
     This is an early prototype of tool for table extraction from PDF documents.
@@ -8,12 +7,7 @@
     you want to extract the table. Also, that tool can't do OCR, therefore
     scanned PDFs are not supported.
 </p>
-<p class="lead text-justify">
-    You may download examples of PDFs containing tables
-    <a href="http://cells.icc.ru/files/datasets/Dataset-PDF-TE.zip">here</a>
-</p>
-<form id="pdfform" name="pdfform" enctype="multipart/form-data" method="post" action="/pdfte/extract"
-      onsubmit="submitHandler()">
+<form id="pdfform" name="pdfform" enctype="multipart/form-data" method="post">
     <div class="form-group">
         <h4>Choose PDF file</h4>
         <input type="file" id="inpdf" name="inpdf" accept=".pdf"
@@ -23,9 +17,39 @@
         <label id="pdfLabel" for="inpdf">No file selected</label>
     </div>
     <div class="form-group">
-        <button id="submit" class="btn btn-primary" type="submit" disabled>Extract</button>
+        <button id="submitBtn" type="submit" class="btn btn-primary" disabled>Extract
+        </button>
     </div>
     <div id="pdfformhidden"></div>
 </form>
 <div id="pdf"></div>
+
+<h4>Or try examples listed below</h4>
+<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+{{ range $ind,$i := . }}
+    <div class="panel panel-default">
+        <div class="panel-heading" role="tab" id="heading{{$i}}">
+            <h4 class="panel-title">
+                <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapse{{$i}}"
+                   aria-expanded="true" aria-controls="collapse{{$i}}">
+                    Example {{$i}}
+                </a>
+            </h4>
+        </div>
+        <div id="collapse{{$i}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading{{$i}}">
+            <div class="panel-body" id="pb{{$i}}">
+                <a id="link{{$i}}" class="btn btn-primary" href="/pdfte/example?id={{$i}}">Try Example</a>
+                <canvas id="pdfcanvasex{{$i}}">Обновите браузер</canvas>
+                <script>
+                    loadExample("{{$i}}");
+                </script>
+            </div>
+        </div>
+    </div>
+{{ end }}
+</div>
+<p class="lead text-justify">
+    You may download more examples
+    <a href="http://cells.icc.ru/files/datasets/Dataset-PDF-TE.zip">here</a>
+</p>
 <br>
